@@ -1,11 +1,15 @@
 #!/bin/bash
 
-# Set hostname (run with appropriate name: 'master' or 'worker-01')
-if [ "$#" -ne 1 ]; then
-    echo "Usage: sudo $0 <hostname> (e.g., master or worker-01)"
+# Set hostname and IPs (run with hostname and IPs: 'master <master-ip> <worker-ip>' or 'worker-01 <master-ip> <worker-ip>')
+if [ "$#" -ne 3 ]; then
+    echo "Usage: sudo $0 <hostname> <master-ip> <worker-ip> (e.g., master 192.168.137.147 192.168.137.148)"
     exit 1
 fi
-hostnamectl set-hostname $1
+HOSTNAME=$1
+MASTER_IP=$2
+WORKER_IP=$3
+
+hostnamectl set-hostname $HOSTNAME
 
 # Disable swap
 sed -i '/swap/s/^\//\#\//g' /etc/fstab
@@ -51,10 +55,10 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 sysctl --system
 
-# Update /etc/hosts (replace master-ip and worker-ip with actual IPs)
+# Update /etc/hosts with provided IPs
 cat <<EOF | sudo tee -a /etc/hosts
-master-ip master
-worker-ip worker-01
+${MASTER_IP} master
+${WORKER_IP} worker-01
 EOF
 
 # Install Kubernetes repo
@@ -66,4 +70,4 @@ apt update -q
 apt install -qy kubelet=1.33.3-1.1 kubectl=1.33.3-1.1 kubeadm=1.33.3-1.1
 apt-mark hold kubelet kubeadm kubectl
 
-echo "Common setup complete. Replace master-ip and worker-ip in /etc/hosts with actual IPs. Proceed to master-init.sh on master or wait for join command on worker."
+echo "Common setup complete. On master, proceed to master-init.sh. On worker, wait for join command."

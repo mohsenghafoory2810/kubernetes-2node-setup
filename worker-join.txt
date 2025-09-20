@@ -9,4 +9,4 @@ fi
 # Run the join command
 $1
 
-echo "Worker joined the cluster. Ensure master-ip and worker-ip are replaced in /etc/hosts."
+echo "Worker joined the cluster."

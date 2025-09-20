@@ -15,27 +15,26 @@ The setup uses:
 - Root/sudo access on both nodes.
 - Nodes can communicate over the network (firewalls allow ports like 6443, 10250, etc.; see [Kubernetes ports](https://kubernetes.io/docs/reference/networking/ports-and-protocols/)).
 - SSH access between nodes for convenience (not required).
-- Replace `master-ip` and `worker-ip` in `/etc/hosts` (set by scripts) with actual IPs before running.
+- Know your master and worker node IPs to pass as arguments to the scripts.
 
 ## Scripts
-- `common-setup.sh`: Run on both nodes to install dependencies, configure containerd/Docker, and install Kubernetes tools.
+- `common-setup.sh`: Run on both nodes to install dependencies, configure containerd/Docker, set up `/etc/hosts` with provided IPs, and install Kubernetes tools.
 - `master-init.sh`: Run only on the master to initialize the cluster and apply Calico.
 - `worker-join.sh`: Run on the worker to join the cluster (requires the join command from the master).
 
 ### How to Use the Scripts
 1. Copy the scripts to both nodes.
 2. Make them executable: `chmod +x *.sh`
-3. Update `/etc/hosts` on both nodes after running `common-setup.sh` to replace `master-ip` and `worker-ip` with actual IPs.
 
 On **Master Node**:
-4. Run common setup: `sudo ./common-setup.sh master`
-5. Run init: `sudo ./master-init.sh <master-ip>`
+3. Run common setup: `sudo ./common-setup.sh master <master-ip> <worker-ip>` (e.g., `sudo ./common-setup.sh master 192.168.137.147 192.168.137.148`)
+4. Run init: `sudo ./master-init.sh <master-ip>`
    - This will output a join command like `kubeadm join <master-ip>:6443 --token ... --discovery-token-ca-cert-hash sha256:...`
    - Copy this command.
 
 On **Worker Node**:
-6. Run common setup: `sudo ./common-setup.sh worker-01`
-7. Join the cluster: `sudo ./worker-join.sh 'paste-the-full-join-command-here'`
+5. Run common setup: `sudo ./common-setup.sh worker-01 <master-ip> <worker-ip>`
+6. Join the cluster: `sudo ./worker-join.sh 'paste-the-full-join-command-here'`
 
 ## Verification
 - On master: `kubectl get nodes` (should show both nodes as Ready after a few minutes).

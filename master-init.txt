@@ -24,4 +24,4 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/
 # Generate join command for workers
 kubeadm token create --print-join-command
 
-echo "Master initialization complete. Copy the join command and run it on the worker (or use worker-join.sh with the command). Ensure master-ip and worker-ip are replaced in /etc/hosts."
+echo "Master initialization complete. Copy the join command and run it on the worker (or use worker-join.sh with the command)."
