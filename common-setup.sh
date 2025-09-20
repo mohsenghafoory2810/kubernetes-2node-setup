@@ -27,8 +27,8 @@ apt update
 apt install docker.io -y
 
 # Configure containerd
-containerd config default | sudo tee /etc/containerd/config.toml
 mkdir -p /etc/containerd/  # Ensure directory exists
+containerd config default | sudo tee /etc/containerd/config.toml
 sed -i 's|sandbox_image = "registry.k8s.io/pause:3.8"|sandbox_image = "registry.k8s.io/pause:3.10"|g' /etc/containerd/config.toml
 sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 
