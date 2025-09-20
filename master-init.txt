@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Check if master IP is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: sudo $0 <master-ip>"
+    exit 1
+fi
+MASTER_IP=$1
+
+# Pull images
+kubeadm config images pull
+
+# Initialize cluster
+kubeadm init --kubernetes-version=v1.33.3 --pod-network-cidr=192.168.0.0/16 --upload-certs --control-plane-endpoint=${MASTER_IP}:6443 --apiserver-advertise-address=${MASTER_IP}
+
+# Set up kubeconfig
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Apply Calico CNI
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/calico.yaml
+
+# Generate join command for workers
+kubeadm token create --print-join-command
+
+echo "Master initialization complete. Copy the join command and run it on the worker (or use worker-join.sh with the command). Ensure master-ip and worker-ip are replaced in /etc/hosts."
