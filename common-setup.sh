@@ -30,14 +30,25 @@ apt install docker.io -y
 containerd config default | sudo tee /etc/containerd/config.toml
 mkdir -p /etc/containerd/  # Ensure directory exists
 sed -i 's|sandbox_image = "registry.k8s.io/pause:3.8"|sandbox_image = "registry.k8s.io/pause:3.10"|g' /etc/containerd/config.toml
-sed -i 's|\[plugins."io.containerd.grpc.v1.cri".registry\]|\[plugins."io.containerd.grpc.v1.cri".registry\]\n      config_path = "/etc/containerd/certs.d"|g' /etc/containerd/config.toml
 sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 
-# Restart services
+# Restart and verify containerd
 systemctl restart containerd.service
-systemctl status containerd.service
+if ! systemctl is-active --quiet containerd; then
+    echo "Error: containerd failed to start. Check logs with 'journalctl -u containerd -n 100'"
+    exit 1
+fi
+if [ ! -S /var/run/containerd/containerd.sock ]; then
+    echo "Error: containerd socket /var/run/containerd/containerd.sock not found."
+    exit 1
+fi
+
+# Restart and verify Docker
 systemctl restart docker.service
-systemctl status docker.service
+if ! systemctl is-active --quiet docker; then
+    echo "Error: Docker failed to start. Check logs with 'journalctl -u docker -n 100'"
+    exit 1
+fi
 
 # Load kernel modules
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
