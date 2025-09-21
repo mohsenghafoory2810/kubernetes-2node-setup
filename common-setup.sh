@@ -30,6 +30,7 @@ apt install docker.io -y
 mkdir -p /etc/containerd/  # Ensure directory exists
 containerd config default | sudo tee /etc/containerd/config.toml
 sed -i 's|sandbox_image = "registry.k8s.io/pause:3.8"|sandbox_image = "registry.k8s.io/pause:3.10"|g' /etc/containerd/config.toml
+sed -i '/\[plugins."io.containerd.grpc.v1.cri".registry\]/ {N;s|\[plugins."io.containerd.grpc.v1.cri".registry\]\n.*|\[plugins."io.containerd.grpc.v1.cri".registry\]\n  config_path = "/etc/containerd/certs.d"|}' /etc/containerd/config.toml
 sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 
 # Restart and verify containerd
